@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -23,7 +24,10 @@ import java.util.List;
 @EnableScheduling
 public class FetchHolidayScheduler {
 
-  @Value("${schedule.use}")
+  @Value("${schedule.useInit}")
+  private boolean useInit;
+
+  @Value("${schedule.useSchedule}")
   private boolean useSchedule;
 
   @Value("${nager.holidays.url}")
@@ -36,37 +40,62 @@ public class FetchHolidayScheduler {
   private final CountryService countryService;
 
 
-  @Scheduled(cron = "${schedule.cron_for_api}")
   @PostConstruct
-  public void fetchHolidaysInfo() {
-    if (useSchedule) {
-      try {
-        log.info("공휴일 API 스케줄러 실행");
-        String countriesData = fetchCountriesData();
-        List<Country> countries = countryService.saveApiResponse(countriesData);
-        log.info("총 국가 수 : " + countries.size());
-
-        Country country = countries.getFirst();
-
-        String holidays = fetchHolidaysData("2025", country.getCountryCode());
-        holidayService.saveApiResponse(holidays, country);
-
-      } catch (Exception e) {
-        log.error("공휴일 API 스케줄러 호출 에러 발생", e);
-
-      } finally {
-        log.info("공휴일 API 스케줄러 종료");
-      }
+  public void initData() {
+    if (useInit) {
+      int initYears = 5;
+      log.info("최초({}년) 데이터 동기화 시작", initYears);
+      fetchAllByYears(initYears);
+      log.info("최초({}년) 데이터 동기화 완료", initYears);
     }
   }
 
+
+  @Scheduled(cron = "${schedule.cron_for_api}")
+  public void syncData() {
+    if (useSchedule) {
+      int syncYears = 2;
+      log.info("정기({}년) 데이터 동기화 시작", syncYears);
+      fetchAllByYears(syncYears);
+      log.info("정기({}년) 데이터 동기화 완료", syncYears);
+    }
+  }
+
+
+  private void fetchAllByYears(int years) {
+    try {
+      String countriesData = fetchCountriesData();
+      List<Country> countries = countryService.saveApiResponse(countriesData);
+      log.info("가능한 국가 수 : {}", countries.size());
+
+      int currentYear = LocalDate.now().getYear();
+      for (int i = 0; i < years; i++) {
+        int year = currentYear - i;
+        for (Country country : countries) {
+          fetchByYearAndCountry(country, year);
+        }
+      }
+
+    } catch (Exception e) {
+      log.error("{}년 데이터 동기화 실패", years, e);
+      throw new RuntimeException("데이터 동기화 실패", e);
+    }
+  }
+
+
+  public void fetchByYearAndCountry(Country country, int year) {
+    String yearString = String.valueOf(year);
+    String holidays = fetchHolidaysData(yearString, country.getCountryCode());
+    holidayService.saveApiResponse(holidays, country);
+  }
+
+
   public String fetchCountriesData() {
-    log.info("가능한 국가 목록 조회");
     return fetchData(countryUrl);
   }
 
+
   public String fetchHolidaysData(String year, String countryCode) {
-    log.info("연도 및 국가별 공휴일 조회");
     String url = String.format("%s/%s/%s", holidaysUrl, year, countryCode);
     return fetchData(url);
   }
@@ -74,8 +103,6 @@ public class FetchHolidayScheduler {
 
   private String fetchData(String url) {
     try {
-      log.info("API Request URL: {}", url);
-
       HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
       connection.setRequestMethod("GET");
       connection.setRequestProperty("Content-Type", "application/json");
@@ -89,7 +116,6 @@ public class FetchHolidayScheduler {
           response.append(line);
         }
       }
-
       return response.toString();
 
     } catch (Exception e) {

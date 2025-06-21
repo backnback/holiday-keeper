@@ -23,7 +23,11 @@ public enum ErrorCode {
   INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다"),
 
   // HolidayTypes
-  INVALID_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 타입입니다");
+  INVALID_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 타입입니다"),
+
+  // Scheduler
+  FAILED_API_CALL(HttpStatus.INTERNAL_SERVER_ERROR, "외부 API 호출에 실패했습니다"),
+  DATA_SYNC_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 동기화에 실패했습니다");
 
   private final HttpStatus httpStatus;
   private final String message;
