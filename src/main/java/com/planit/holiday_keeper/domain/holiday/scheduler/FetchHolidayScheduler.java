@@ -1,5 +1,6 @@
 package com.planit.holiday_keeper.domain.holiday.scheduler;
 
+import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.service.CountryService;
 import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
 import jakarta.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -40,11 +42,14 @@ public class FetchHolidayScheduler {
     if (useSchedule) {
       try {
         log.info("공휴일 API 스케줄러 실행");
-        String countries = fetchCountriesData();
-        countryService.saveApiResponse(countries);
+        String countriesData = fetchCountriesData();
+        List<Country> countries = countryService.saveApiResponse(countriesData);
+        log.info("총 국가 수 : " + countries.size());
 
-        String holidays = fetchHolidaysData("2025", "KR");
-        holidayService.saveApiResponse(holidays);
+        Country country = countries.getFirst();
+
+        String holidays = fetchHolidaysData("2025", country.getCountryCode());
+        holidayService.saveApiResponse(holidays, country);
 
       } catch (Exception e) {
         log.error("공휴일 API 스케줄러 호출 에러 발생", e);

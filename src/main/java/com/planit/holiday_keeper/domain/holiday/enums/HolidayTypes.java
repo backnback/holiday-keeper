@@ -1,8 +1,10 @@
 package com.planit.holiday_keeper.domain.holiday.enums;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -16,4 +18,27 @@ public enum HolidayTypes {
   OBSERVANCE("기념일");
 
   private final String description;
+
+  public static HolidayTypes fromString(String type) {
+    if (type == null || type.trim().isEmpty()) return null;
+
+    try {
+      return HolidayTypes.valueOf(type.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+
+  public static List<HolidayTypes> fromStringList(List<String> types) {
+    if (types == null || types.isEmpty()) {
+      return new ArrayList<>();
+    }
+
+    List<HolidayTypes> newTypes = new ArrayList<>();
+    for (String type : types) {
+      newTypes.add(fromString(type));
+    }
+    return newTypes;
+  }
 }

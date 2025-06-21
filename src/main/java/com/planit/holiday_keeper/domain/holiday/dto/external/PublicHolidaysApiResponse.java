@@ -3,6 +3,9 @@ package com.planit.holiday_keeper.domain.holiday.dto.external;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.planit.holiday_keeper.domain.holiday.entity.Country;
+import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
+import com.planit.holiday_keeper.domain.holiday.enums.HolidayTypes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
@@ -42,4 +45,18 @@ public record PublicHolidaysApiResponse (
     @Schema(description = "공휴일 유형 목록")
     List<String> types
 
-) {}
+) {
+    public Holiday toEntity(Country country) {
+        return Holiday.builder()
+            .date(date)
+            .name(name)
+            .localName(localName)
+            .country(country)
+            .holidayYear(date.getYear())
+            .global(global != null ? global : false)
+            .launchYear(launchYear)
+            .types(HolidayTypes.fromStringList(types))
+            .counties(counties)
+            .build();
+    }
+}

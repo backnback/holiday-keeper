@@ -1,5 +1,6 @@
 package com.planit.holiday_keeper.domain.holiday.dto.external;
 
+import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 
@@ -11,4 +12,11 @@ public record AvailableCountriesApiResponse(
 
     @Schema(description = "국가 이름", example = "South Korea")
     String name
-) {}
+) {
+    public Country toEntity() {
+        return Country.builder()
+            .countryCode(countryCode)
+            .name(name)
+            .build();
+    }
+}
