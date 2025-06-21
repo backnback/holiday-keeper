@@ -5,4 +5,5 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class Holiday extends BaseEntity {
+
 }

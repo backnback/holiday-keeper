@@ -1,0 +1,12 @@
+
+
+schedule:
+  use: true
+  cron_for_api: "0 0 1 2 1 ?"
+
+
+nager:
+  holidays:
+    url: https://date.nager.at/api/v3/PublicHolidays
+  countries:
+    url: https://date.nager.at/api/v3/AvailableCountries

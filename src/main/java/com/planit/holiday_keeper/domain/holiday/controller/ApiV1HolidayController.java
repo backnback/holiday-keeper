@@ -1,4 +1,4 @@
-package com.planit.holiday_keeper.api.holiday.controller;
+package com.planit.holiday_keeper.domain.holiday.controller;
 
 import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
 import com.planit.holiday_keeper.global.rsData.RsData;
