@@ -34,6 +34,9 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
+	// Validation
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+
 	// JUnit
 	testImplementation("org.junit.jupiter:junit-jupiter")
 
