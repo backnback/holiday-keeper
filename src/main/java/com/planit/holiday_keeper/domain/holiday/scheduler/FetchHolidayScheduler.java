@@ -70,9 +70,13 @@ public class FetchHolidayScheduler {
       int currentYear = LocalDate.now().getYear();
       for (int i = 0; i < years; i++) {
         int year = currentYear - i;
-        for (Country country : countries) {
-          fetchByYearAndCountry(country, year);
-        }
+        countries.parallelStream().forEach(country -> {
+          try {
+            fetchByYearAndCountry(country, year);
+          } catch (Exception e) {
+            log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
+          }
+        });
       }
 
     } catch (Exception e) {
