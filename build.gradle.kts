@@ -37,6 +37,9 @@ dependencies {
 	// Validation
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 
+	// webfulx
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+
 	// JUnit
 	testImplementation("org.junit.jupiter:junit-jupiter")
 
