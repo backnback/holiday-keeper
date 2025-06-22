@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planit.holiday_keeper.domain.holiday.dto.external.AvailableCountriesApiResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.repository.CountryRepository;
+import com.planit.holiday_keeper.global.exceptions.CustomException;
+import com.planit.holiday_keeper.global.exceptions.ErrorCode;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,4 +46,9 @@ public class CountryService {
     }
   }
 
+
+  public Country findByCountryCode(@NonNull String countryCode) {
+    return countryRepository.findByCountryCode(countryCode)
+        .orElseThrow(() -> new CustomException(ErrorCode.ENTITY_NOT_FOUND));
+  }
 }

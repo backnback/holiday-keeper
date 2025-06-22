@@ -37,8 +37,16 @@ public enum HolidayTypes {
 
     List<HolidayTypes> newTypes = new ArrayList<>();
     for (String type : types) {
-      newTypes.add(fromString(type));
+      HolidayTypes holidayType = fromString(type);
+      if (holidayType != null) {  // ✅ null 체크 추가
+        newTypes.add(holidayType);
+      }
     }
     return newTypes;
+  }
+
+
+  public static List<String> validateList(List<String> types) {
+    return fromStringList(types).stream().map(HolidayTypes::name).toList();
   }
 }

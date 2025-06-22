@@ -6,7 +6,6 @@ import com.planit.holiday_keeper.domain.holiday.dto.external.PublicHolidaysApiRe
 import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
-import com.planit.holiday_keeper.domain.holiday.enums.HolidayTypes;
 import com.planit.holiday_keeper.domain.holiday.repository.HolidayRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,23 +26,21 @@ public class HolidayService {
   private final HolidayRepository holidayRepository;
   private final ObjectMapper objectMapper;
 
+
   @Transactional
   public void saveApiResponse(String jsonResponse, Country country) {
-      try {
-        List<PublicHolidaysApiResponse>
-            responses = objectMapper.readValue(jsonResponse, new TypeReference<List<PublicHolidaysApiResponse>>(){});
+    try {
+      List<PublicHolidaysApiResponse>
+          responses = objectMapper.readValue(jsonResponse, new TypeReference<List<PublicHolidaysApiResponse>>(){});
 
-        List<Holiday> holidays = new ArrayList<>();
-        for (PublicHolidaysApiResponse response : responses) {
-          holidays.add(response.toEntity(country));
-        }
-
-        holidayRepository.saveAll(holidays);
-
-      } catch (Exception e) {
-        log.error("공휴일 데이터 저장 중 에러 발생: {}", e.getMessage(), e);
-        throw new RuntimeException("공휴일 데이터 저장 실패", e);
+      for (PublicHolidaysApiResponse response : responses) {
+        holidayRepository.upsert(response.toEntity(country));
       }
+
+    } catch (Exception e) {
+      log.error("공휴일 데이터 저장 중 에러 발생: {}", e.getMessage(), e);
+      throw new RuntimeException("공휴일 데이터 저장 실패", e);
+    }
   }
 
 
@@ -53,7 +49,7 @@ public class HolidayService {
       String type, String name, Pageable pageable
   ) {
     Page<Holiday> holidays = holidayRepository.findWithFilters(
-        year, countryCode, from, to, HolidayTypes.fromString(type), name, pageable
+        year, countryCode, from, to, type, name, pageable
     );
 
     return holidays.map(HolidayResponse::of);

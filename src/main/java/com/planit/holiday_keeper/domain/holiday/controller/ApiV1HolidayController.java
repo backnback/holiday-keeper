@@ -1,21 +1,23 @@
 package com.planit.holiday_keeper.domain.holiday.controller;
 
+import com.planit.holiday_keeper.domain.holiday.dto.request.SyncDataRequest;
 import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
+import com.planit.holiday_keeper.domain.holiday.entity.Country;
+import com.planit.holiday_keeper.domain.holiday.scheduler.FetchHolidayScheduler;
+import com.planit.holiday_keeper.domain.holiday.service.CountryService;
 import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
 import com.planit.holiday_keeper.global.globalDto.PageResponse;
 import com.planit.holiday_keeper.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
@@ -26,6 +28,8 @@ import java.time.LocalDate;
 public class ApiV1HolidayController {
 
   private final HolidayService holidayService;
+  private final CountryService countryService;
+  private final FetchHolidayScheduler fetchHolidayScheduler;
 
 
   @GetMapping
@@ -49,5 +53,14 @@ public class ApiV1HolidayController {
     );
 
     return new RsData<>("200", "공휴일 목록 조회 성공", PageResponse.of(response));
+  }
+
+
+  @PostMapping("/sync")
+  @Operation(summary = "특정 연도 및 국가 데이터 동기화")
+  public RsData<Void> syncData(@Valid @RequestBody SyncDataRequest request) {
+    Country country = countryService.findByCountryCode(request.countyCode());
+    fetchHolidayScheduler.fetchByYearAndCountry(country, request.year());
+    return new RsData<>("200", "동기화 완료");
   }
 }

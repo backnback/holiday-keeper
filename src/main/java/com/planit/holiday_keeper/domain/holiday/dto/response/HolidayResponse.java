@@ -3,7 +3,6 @@ package com.planit.holiday_keeper.domain.holiday.dto.response;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
 import com.planit.holiday_keeper.domain.holiday.enums.HolidayTypes;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -15,8 +14,11 @@ import java.util.List;
 @Builder
 public record HolidayResponse(
 
+    @Schema(description = "ID", example = "233")
+    Long id,
+
     @Schema(description = "공휴일 날짜", example = "2025-10-13")
-    @NotNull LocalDate date,
+    LocalDate date,
 
     @Schema(description = "공휴일 원본명", example = "Columbus Day")
     String localName,
@@ -42,6 +44,7 @@ public record HolidayResponse(
 ) {
   public static HolidayResponse of(Holiday holiday) {
     return HolidayResponse.builder()
+        .id(holiday.getId())
         .date(holiday.getDate())
         .localName(holiday.getLocalName())
         .name(holiday.getName())
@@ -49,7 +52,7 @@ public record HolidayResponse(
         .global(holiday.isGlobal())
         .counties(new ArrayList<>(holiday.getCounties()))
         .launchYear(holiday.getLaunchYear())
-        .types(new ArrayList<>(holiday.getTypes()))
+        .types(holiday.getTypes())
         .build();
   }
 }

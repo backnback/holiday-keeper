@@ -85,13 +85,11 @@ public class FetchHolidayScheduler {
     }
   }
 
-
   public void fetchByYearAndCountry(Country country, int year) {
     String yearString = String.valueOf(year);
     String holidays = fetchHolidaysData(yearString, country.getCountryCode());
     holidayService.saveApiResponse(holidays, country);
   }
-
 
   public String fetchCountriesData() {
     return fetchData(countryUrl);
