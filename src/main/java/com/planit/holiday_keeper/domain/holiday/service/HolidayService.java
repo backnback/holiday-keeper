@@ -3,11 +3,14 @@ package com.planit.holiday_keeper.domain.holiday.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planit.holiday_keeper.domain.holiday.dto.external.PublicHolidaysApiResponse;
+import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
 import com.planit.holiday_keeper.domain.holiday.repository.HolidayRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,4 +47,8 @@ public class HolidayService {
       }
   }
 
+  public Page<HolidayResponse> findAll(Pageable pageable) {
+    Page<Holiday> holidays = holidayRepository.findAll(pageable);
+    return holidays.map(HolidayResponse::of);
+  }
 }

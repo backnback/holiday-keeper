@@ -1,25 +1,37 @@
 package com.planit.holiday_keeper.domain.holiday.controller;
 
+import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
 import com.planit.holiday_keeper.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/holidays")
 @RequiredArgsConstructor
-@Tag(name = "테스트 API", description = "테스트")
+@Tag(name = "공휴일 조회 API", description = "국가 및 연도별 공휴일 조회 API")
 public class ApiV1HolidayController {
 
   private final HolidayService holidayService;
 
   @GetMapping
-  @Operation(summary = "Swagger 테스트")
-  public RsData<Void> hello() {
-    return new RsData<>("200", "테스트 성공");
+  @Operation(summary = "공휴일 목록 조회 (페이징, 필터 적용)")
+  public RsData<Page<HolidayResponse>> getHolidays(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size
+  ) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+    Page<HolidayResponse> response = holidayService.findAll(pageable);
+
+    return new RsData<>("200", "공휴일 목록 조회 성공", response);
   }
 }
