@@ -10,11 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -38,6 +36,7 @@ public class FetchHolidayScheduler {
 
   private final HolidayService holidayService;
   private final CountryService countryService;
+  private final WebClient webClient;
 
 
   @PostConstruct
@@ -71,9 +70,13 @@ public class FetchHolidayScheduler {
       int currentYear = LocalDate.now().getYear();
       for (int i = 0; i < years; i++) {
         int year = currentYear - i;
-        for (Country country : countries) {
-          fetchByYearAndCountry(country, year);
-        }
+        countries.parallelStream().forEach(country -> {
+          try {
+            fetchByYearAndCountry(country, year);
+          } catch (Exception e) {
+            log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
+          }
+        });
       }
 
     } catch (Exception e) {
@@ -103,20 +106,12 @@ public class FetchHolidayScheduler {
 
   private String fetchData(String url) {
     try {
-      HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-      connection.setRequestMethod("GET");
-      connection.setRequestProperty("Content-Type", "application/json");
-      connection.setRequestProperty("Accept", "application/json");
-
-      StringBuilder response = new StringBuilder();
-      try (BufferedReader reader = new BufferedReader(
-          new InputStreamReader(connection.getInputStream(), "UTF-8"))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-          response.append(line);
-        }
-      }
-      return response.toString();
+      return webClient.get()
+          .uri(url)
+          .retrieve()
+          .bodyToMono(String.class)
+          .timeout(Duration.ofSeconds(30))
+          .block();
 
     } catch (Exception e) {
       log.error("API 호출 중 에러 발생", e);

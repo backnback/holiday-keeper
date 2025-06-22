@@ -42,6 +42,7 @@ public class Holiday extends BaseEntity {
       joinColumns = @JoinColumn(name = "holiday_id")
   )
   @Column(name = "county_code")
+  @Builder.Default
   private List<String> counties = new ArrayList<>();
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -55,5 +56,6 @@ public class Holiday extends BaseEntity {
       joinColumns = @JoinColumn(name = "holiday_id")
   )
   @Column(name = "type")
+  @Builder.Default
   private List<HolidayTypes> types = new ArrayList<>();
 }
