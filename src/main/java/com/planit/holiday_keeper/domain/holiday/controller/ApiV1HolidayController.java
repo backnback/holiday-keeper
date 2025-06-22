@@ -2,6 +2,7 @@ package com.planit.holiday_keeper.domain.holiday.controller;
 
 import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
+import com.planit.holiday_keeper.global.globalDto.PageResponse;
 import com.planit.holiday_keeper.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,7 +30,7 @@ public class ApiV1HolidayController {
 
   @GetMapping
   @Operation(summary = "공휴일 목록 조회 (페이징, 필터, 검색, 날짜정렬 적용)")
-  public RsData<Page<HolidayResponse>> getHolidays(
+  public RsData<PageResponse<HolidayResponse>> getHolidays(
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size,
       @RequestParam(required = false) Integer year,
@@ -47,6 +48,6 @@ public class ApiV1HolidayController {
         year, countryCode, from, to, type, name, pageable
     );
 
-    return new RsData<>("200", "공휴일 목록 조회 성공", response);
+    return new RsData<>("200", "공휴일 목록 조회 성공", PageResponse.of(response));
   }
 }

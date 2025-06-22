@@ -7,6 +7,7 @@ holiday-keeper
 │     └─ gradle-wrapper.properties
 ├─ gradlew
 ├─ gradlew.bat
+├─ README.md
 └─ src
    ├─ main
    │  ├─ generated
@@ -14,23 +15,33 @@ holiday-keeper
    │  │  └─ com
    │  │     └─ planit
    │  │        └─ holiday_keeper
-   │  │           ├─ api
+   │  │           ├─ domain
    │  │           │  └─ holiday
    │  │           │     ├─ controller
    │  │           │     │  └─ ApiV1HolidayController.java
-   │  │           │     └─ dto
-   │  │           ├─ domain
-   │  │           │  └─ holiday
+   │  │           │     ├─ dto
+   │  │           │     │  ├─ external
+   │  │           │     │  │  ├─ AvailableCountriesApiResponse.java
+   │  │           │     │  │  └─ PublicHolidaysApiResponse.java
+   │  │           │     │  ├─ request
+   │  │           │     │  └─ response
+   │  │           │     │     └─ HolidayResponse.java
    │  │           │     ├─ entity
    │  │           │     │  ├─ Country.java
    │  │           │     │  └─ Holiday.java
+   │  │           │     ├─ enums
+   │  │           │     │  └─ HolidayTypes.java
    │  │           │     ├─ repository
+   │  │           │     │  ├─ CountryRepository.java
    │  │           │     │  └─ HolidayRepository.java
    │  │           │     ├─ scheduler
    │  │           │     │  └─ FetchHolidayScheduler.java
    │  │           │     └─ service
+   │  │           │        ├─ CountryService.java
    │  │           │        └─ HolidayService.java
    │  │           ├─ global
+   │  │           │  ├─ config
+   │  │           │  │  └─ WebClientConfig.java
    │  │           │  ├─ exceptions
    │  │           │  │  ├─ CustomException.java
    │  │           │  │  ├─ ErrorCode.java
@@ -44,6 +55,7 @@ holiday-keeper
    │  │           │     └─ Empty.java
    │  │           └─ HolidayKeeperApplication.java
    │  └─ resources
+   │     ├─ application-test.yml
    │     └─ application.yml
    └─ test
       └─ java
@@ -52,6 +64,8 @@ holiday-keeper
                └─ holiday_keeper
                   ├─ domain
                   │  └─ holiday
+                  │     ├─ scheduler
+                  │     │  └─ FetchHolidaySchedulerTest.java
                   │     └─ service
                   │        └─ HolidayServiceTest.java
                   └─ HolidayKeeperApplicationTests.java
