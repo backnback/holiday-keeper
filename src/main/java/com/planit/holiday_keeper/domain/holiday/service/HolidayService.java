@@ -6,6 +6,7 @@ import com.planit.holiday_keeper.domain.holiday.dto.external.PublicHolidaysApiRe
 import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
+import com.planit.holiday_keeper.domain.holiday.enums.HolidayTypes;
 import com.planit.holiday_keeper.domain.holiday.repository.HolidayRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +30,6 @@ public class HolidayService {
 
   @Transactional
   public void saveApiResponse(String jsonResponse, Country country) {
-      log.info(jsonResponse);
-
       try {
         List<PublicHolidaysApiResponse>
             responses = objectMapper.readValue(jsonResponse, new TypeReference<List<PublicHolidaysApiResponse>>(){});
@@ -47,8 +47,15 @@ public class HolidayService {
       }
   }
 
-  public Page<HolidayResponse> findAll(Pageable pageable) {
-    Page<Holiday> holidays = holidayRepository.findAll(pageable);
+
+  public Page<HolidayResponse> findWithFilters(
+      Integer year, String countryCode, LocalDate from, LocalDate to,
+      String type, String name, Pageable pageable
+  ) {
+    Page<Holiday> holidays = holidayRepository.findWithFilters(
+        year, countryCode, from, to, HolidayTypes.fromString(type), name, pageable
+    );
+
     return holidays.map(HolidayResponse::of);
   }
 }
