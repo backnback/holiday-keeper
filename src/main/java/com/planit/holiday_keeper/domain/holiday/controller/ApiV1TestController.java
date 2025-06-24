@@ -4,13 +4,14 @@ import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
 import com.planit.holiday_keeper.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/test")
 @RequiredArgsConstructor
 @Tag(name = "테스트 용 임시 API", description = "테스트 활동 도우미 API")
-//@Profile({"test"})
+@Profile("test")
 public class ApiV1TestController {
 
   private final HolidayService holidayService;
