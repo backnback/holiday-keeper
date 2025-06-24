@@ -37,6 +37,11 @@ public class HolidayService {
       List<PublicHolidaysApiResponse>
           responses = objectMapper.readValue(jsonResponse, new TypeReference<List<PublicHolidaysApiResponse>>(){});
 
+      if (responses.isEmpty()) {
+        log.info("{}년 {} 국가 - 빈 데이터", year, country.getCountryCode());
+        return;
+      }
+
       for (PublicHolidaysApiResponse response : responses) {
         holidayRepository.upsert(response.toEntity(country), syncTime);
       }

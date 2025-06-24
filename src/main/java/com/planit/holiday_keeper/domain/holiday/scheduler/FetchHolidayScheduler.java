@@ -94,6 +94,12 @@ public class FetchHolidayScheduler {
   public void fetchByYearAndCountry(Country country, int year, LocalDateTime syncTime) {
     String yearString = String.valueOf(year);
     String holidays = fetchHolidaysData(yearString, country.getCountryCode());
+
+    if (holidays == null) {
+      log.debug("{}년 {} 국가 - null 응답", year, country.getCountryCode());
+      return;
+    }
+
     holidayService.saveApiResponse(holidays, country, year, syncTime);
   }
 
