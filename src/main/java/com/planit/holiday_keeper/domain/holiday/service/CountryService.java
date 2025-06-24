@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,12 +32,11 @@ public class CountryService {
           new TypeReference<List<AvailableCountriesApiResponse>>(){}
       );
 
-      List<Country> countries = new ArrayList<>();
       for (AvailableCountriesApiResponse response : responses) {
-        countries.add(response.toEntity());
+        countryRepository.upsert(response.toEntity());
       }
 
-      return countryRepository.saveAll(countries);
+      return countryRepository.findAll();
 
     } catch (Exception e) {
       log.error("국가 데이터 저장 중 에러 발생: {}", e.getMessage(), e);
