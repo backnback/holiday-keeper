@@ -22,7 +22,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 		),
 		servers = {
 				@Server(url = "http://localhost:8090", description = "개발 서버"),
-				@Server(url = "https://api.example.com", description = "운영 서버")
+				@Server(url = "https://api.backnback.site", description = "운영 서버")
 		}
 )
 @SpringBootApplication
