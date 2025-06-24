@@ -15,22 +15,13 @@ public enum ErrorCode {
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
 
   // Country 관련
-  COUNTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "국가를 찾을 수 없습니다"),
   INVALID_COUNTRY_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 국가 코드입니다"),
   COUNTRY_CODE_REQUIRED(HttpStatus.BAD_REQUEST, "국가 코드는 필수 입력값입니다."),
 
   // Holiday 관련
-  HOLIDAY_NOT_FOUND(HttpStatus.NOT_FOUND, "공휴일을 찾을 수 없습니다"),
-  INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "유효하지 않은 날짜 범위입니다"),
   INVALID_YEAR_RANGE(HttpStatus.BAD_REQUEST, "연도는 최근 5년 범위 내에서만 가능합니다."),
-  YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "연도는 필수 입력값입니다."),
+  YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "연도는 필수 입력값입니다.");
 
-  // HolidayTypes
-  INVALID_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 타입입니다"),
-
-  // Scheduler
-  FAILED_API_CALL(HttpStatus.INTERNAL_SERVER_ERROR, "외부 API 호출에 실패했습니다"),
-  DATA_SYNC_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "데이터 동기화에 실패했습니다");
 
   private final HttpStatus httpStatus;
   private final String message;
