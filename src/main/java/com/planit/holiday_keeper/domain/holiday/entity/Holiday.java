@@ -24,7 +24,11 @@ import java.util.List;
     uniqueConstraints = @UniqueConstraint(
         name = "uk_1",
         columnNames = {"country_id", "date", "name"}
-    )
+    ),
+    indexes = {
+        @Index(name = "idx_year", columnList = "holidayYear"),
+        @Index(name = "idx_country_year", columnList = "country_id, holidayYear")
+    }
 )
 public class Holiday extends BaseEntity {
 
