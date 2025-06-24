@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planit.holiday_keeper.domain.holiday.dto.external.AvailableCountriesApiResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.repository.CountryRepository;
+import com.planit.holiday_keeper.global.exceptions.CustomException;
+import com.planit.holiday_keeper.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,12 +31,11 @@ public class CountryService {
           new TypeReference<List<AvailableCountriesApiResponse>>(){}
       );
 
-      List<Country> countries = new ArrayList<>();
       for (AvailableCountriesApiResponse response : responses) {
-        countries.add(response.toEntity());
+        countryRepository.upsert(response.toEntity());
       }
 
-      return countryRepository.saveAll(countries);
+      return countryRepository.findAll();
 
     } catch (Exception e) {
       log.error("국가 데이터 저장 중 에러 발생: {}", e.getMessage(), e);
@@ -43,4 +43,12 @@ public class CountryService {
     }
   }
 
+
+  public Country findByCountryCode(String countryCode) {
+    if (countryCode == null) {
+      throw new CustomException(ErrorCode.COUNTRY_CODE_REQUIRED);
+    }
+    return countryRepository.findByCountryCode(countryCode)
+        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_COUNTRY_CODE));
+  }
 }

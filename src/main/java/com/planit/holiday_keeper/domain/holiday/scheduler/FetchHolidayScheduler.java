@@ -13,8 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 @Component
 @Slf4j
@@ -50,7 +51,7 @@ public class FetchHolidayScheduler {
   }
 
 
-  @Scheduled(cron = "${schedule.cron_for_api}")
+  @Scheduled(cron = "${schedule.cron_for_api}", zone = "Asia/Seoul")
   public void syncData() {
     if (useSchedule) {
       int syncYears = 2;
@@ -63,21 +64,29 @@ public class FetchHolidayScheduler {
 
   private void fetchAllByYears(int years) {
     try {
+      long startTime = System.currentTimeMillis();
       String countriesData = fetchCountriesData();
       List<Country> countries = countryService.saveApiResponse(countriesData);
       log.info("가능한 국가 수 : {}", countries.size());
 
-      int currentYear = LocalDate.now().getYear();
-      for (int i = 0; i < years; i++) {
-        int year = currentYear - i;
-        countries.parallelStream().forEach(country -> {
-          try {
-            fetchByYearAndCountry(country, year);
-          } catch (Exception e) {
-            log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
-          }
-        });
+      LocalDateTime syncTime = LocalDateTime.now();
+      int currentYear = syncTime.getYear();
+      try (ForkJoinPool customPool = new ForkJoinPool(30)) {
+        for (int i = 0; i < years; i++) {
+          int year = currentYear - i;
+          customPool.submit(() ->
+              countries.parallelStream().forEach(country -> {
+                try {
+                  fetchByYearAndCountry(country, year, syncTime);
+                } catch (Exception e) {
+                  log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
+                }
+              })
+          ).get();
+        }
       }
+      long endTime = System.currentTimeMillis();
+      log.info("=== {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - startTime);
 
     } catch (Exception e) {
       log.error("{}년 데이터 동기화 실패", years, e);
@@ -86,10 +95,15 @@ public class FetchHolidayScheduler {
   }
 
 
-  public void fetchByYearAndCountry(Country country, int year) {
+  public void fetchByYearAndCountry(Country country, int year, LocalDateTime syncTime) {
     String yearString = String.valueOf(year);
     String holidays = fetchHolidaysData(yearString, country.getCountryCode());
-    holidayService.saveApiResponse(holidays, country);
+
+    if (holidays == null) {
+      log.debug("{}년 {} 국가 - null 응답", year, country.getCountryCode());
+      return;
+    }
+    holidayService.saveApiResponse(holidays, country, year, syncTime);
   }
 
 

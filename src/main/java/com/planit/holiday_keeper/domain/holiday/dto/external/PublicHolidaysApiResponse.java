@@ -5,9 +5,7 @@ package com.planit.holiday_keeper.domain.holiday.dto.external;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
-import com.planit.holiday_keeper.domain.holiday.enums.HolidayTypes;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,7 +16,6 @@ import java.util.List;
 public record PublicHolidaysApiResponse (
 
     @Schema(description = "공휴일 날짜", example = "2025-10-13")
-    @NotNull
     LocalDate date,
 
     @Schema(description = "공휴일 원본명", example = "Columbus Day")
@@ -47,7 +44,7 @@ public record PublicHolidaysApiResponse (
 
 ) {
     public Holiday toEntity(Country country) {
-        return Holiday.builder()
+        Holiday holiday = Holiday.builder()
             .date(date)
             .name(name)
             .localName(localName)
@@ -55,8 +52,10 @@ public record PublicHolidaysApiResponse (
             .holidayYear(date.getYear())
             .global(global != null ? global : false)
             .launchYear(launchYear)
-            .types(HolidayTypes.fromStringList(types))
-            .counties(counties)
             .build();
+
+        holiday.setCounties(counties);
+        holiday.setTypes(types);
+        return holiday;
     }
 }
