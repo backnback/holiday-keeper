@@ -63,6 +63,7 @@ public class ApiV1HolidayController {
   public RsData<Void> syncHolidays(@Valid @RequestBody SyncDataRequest request) {
     LocalDateTime syncTime = LocalDateTime.now();
     Country country = countryService.findByCountryCode(request.countryCode());
+    holidayService.validateYear(request.year());
     fetchHolidayScheduler.fetchByYearAndCountry(country, request.year(), syncTime);
     return new RsData<>("204", "동기화 완료");
   }

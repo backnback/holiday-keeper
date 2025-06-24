@@ -7,7 +7,6 @@ import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.repository.CountryRepository;
 import com.planit.holiday_keeper.global.exceptions.CustomException;
 import com.planit.holiday_keeper.global.exceptions.ErrorCode;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,8 +44,11 @@ public class CountryService {
   }
 
 
-  public Country findByCountryCode(@NonNull String countryCode) {
+  public Country findByCountryCode(String countryCode) {
+    if (countryCode == null) {
+      throw new CustomException(ErrorCode.COUNTRY_CODE_REQUIRED);
+    }
     return countryRepository.findByCountryCode(countryCode)
-        .orElseThrow(() -> new CustomException(ErrorCode.ENTITY_NOT_FOUND));
+        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_COUNTRY_CODE));
   }
 }

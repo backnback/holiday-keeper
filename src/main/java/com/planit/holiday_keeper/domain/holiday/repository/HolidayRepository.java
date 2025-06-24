@@ -52,8 +52,6 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
         """, nativeQuery = true)
   void upsert(@Param("holiday") Holiday holiday, @Param("syncTime") LocalDateTime syncTime);
 
-  List<Holiday> findByCountryAndHolidayYear(Country country, int holidayYear);
-
   int deleteByCountryAndHolidayYear(Country country, int year);
 
   @Query("SELECT c.countryCode, c.name, COUNT(h.id) as holidayCount " +
@@ -65,4 +63,10 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
   @Modifying
   @Query("DELETE FROM Holiday h WHERE h.country = :country AND h.holidayYear = :year AND h.modifiedAt < :syncTime")
   int deleteMissingHolidays(@Param("country") Country country, @Param("year") int year, @Param("syncTime") LocalDateTime syncTime);
+
+  @Query("SELECT h FROM Holiday h WHERE h.country.countryCode = :countryCode AND h.holidayYear = :year")
+  List<Holiday> findByCountryCodeAndYear(@Param("countryCode") String countryCode, @Param("year") int year);
+
+  @Query("SELECT h FROM Holiday h WHERE h.country.countryCode = :countryCode AND h.holidayYear = :year ORDER BY h.id DESC")
+  List<Holiday> findByCountryCodeAndYearOrderByIdDesc(@Param("countryCode") String countryCode, @Param("year") int year);
 }

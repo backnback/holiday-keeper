@@ -64,13 +64,14 @@ public class FetchHolidayScheduler {
 
   private void fetchAllByYears(int years) {
     try {
+      long startTime = System.currentTimeMillis();
       String countriesData = fetchCountriesData();
       List<Country> countries = countryService.saveApiResponse(countriesData);
       log.info("가능한 국가 수 : {}", countries.size());
 
       LocalDateTime syncTime = LocalDateTime.now();
       int currentYear = syncTime.getYear();
-      try (ForkJoinPool customPool = new ForkJoinPool(10)) {
+      try (ForkJoinPool customPool = new ForkJoinPool(30)) {
         for (int i = 0; i < years; i++) {
           int year = currentYear - i;
           customPool.submit(() ->
@@ -84,12 +85,15 @@ public class FetchHolidayScheduler {
           ).get();
         }
       }
+      long endTime = System.currentTimeMillis();
+      log.info("=== {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - startTime);
 
     } catch (Exception e) {
       log.error("{}년 데이터 동기화 실패", years, e);
       throw new RuntimeException("데이터 동기화 실패", e);
     }
   }
+
 
   public void fetchByYearAndCountry(Country country, int year, LocalDateTime syncTime) {
     String yearString = String.valueOf(year);
@@ -99,9 +103,9 @@ public class FetchHolidayScheduler {
       log.debug("{}년 {} 국가 - null 응답", year, country.getCountryCode());
       return;
     }
-
     holidayService.saveApiResponse(holidays, country, year, syncTime);
   }
+
 
   public String fetchCountriesData() {
     return fetchData(countryUrl);
