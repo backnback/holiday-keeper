@@ -3,6 +3,7 @@ package com.planit.holiday_keeper.domain.holiday.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planit.holiday_keeper.domain.holiday.dto.external.PublicHolidaysApiResponse;
+import com.planit.holiday_keeper.domain.holiday.dto.response.CountryHolidayCountResponse;
 import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
@@ -53,5 +54,20 @@ public class HolidayService {
     );
 
     return holidays.map(HolidayResponse::of);
+  }
+
+
+  @Transactional
+  public int deleteAllBy(Country country, int year) {
+    return holidayRepository.deleteByCountryAndHolidayYear(country, year);
+  }
+
+
+  public Page<CountryHolidayCountResponse> getCountByCountry(int year, Pageable pageable) {
+    Page<Object[]> rows = holidayRepository.countHolidaysByCountry(year, pageable);
+
+    return rows.map(row -> CountryHolidayCountResponse.of(
+        (String) row[0], (String) row[1], (Long) row[2]
+    ));
   }
 }

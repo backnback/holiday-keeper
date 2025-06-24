@@ -1,6 +1,7 @@
 package com.planit.holiday_keeper.domain.holiday.controller;
 
 import com.planit.holiday_keeper.domain.holiday.dto.request.SyncDataRequest;
+import com.planit.holiday_keeper.domain.holiday.dto.response.CountryHolidayCountResponse;
 import com.planit.holiday_keeper.domain.holiday.dto.response.HolidayResponse;
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.scheduler.FetchHolidayScheduler;
@@ -57,10 +58,38 @@ public class ApiV1HolidayController {
 
 
   @PostMapping("/sync")
-  @Operation(summary = "특정 연도 및 국가 데이터 동기화")
-  public RsData<Void> syncData(@Valid @RequestBody SyncDataRequest request) {
-    Country country = countryService.findByCountryCode(request.countyCode());
+  @Operation(summary = "특정 연도 및 국가 데이터 동기화 (Refresh)")
+  public RsData<Void> syncHolidays(@Valid @RequestBody SyncDataRequest request) {
+    Country country = countryService.findByCountryCode(request.countryCode());
     fetchHolidayScheduler.fetchByYearAndCountry(country, request.year());
-    return new RsData<>("200", "동기화 완료");
+    return new RsData<>("204", "동기화 완료");
+  }
+
+
+  @DeleteMapping("/{countryCode}/{year}")
+  @Operation(summary = "특정 연도 및 국가 데이터 전체 삭제")
+  public RsData<Void> deleteHolidays(
+      @PathVariable Integer year, @PathVariable String countryCode
+  ) {
+    Country country = countryService.findByCountryCode(countryCode);
+    int deleteCount = holidayService.deleteAllBy(country, year);
+    return new RsData<>("204", "%d개 데이터 삭제 완료".formatted(deleteCount));
+  }
+
+
+  @GetMapping("/countries")
+  @Operation(summary = "특정 연도의 나라별 공휴일 개수 조회")
+  public RsData<PageResponse<CountryHolidayCountResponse>> getCountByCountry(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "30") int size,
+      @RequestParam(defaultValue = "2025") int year,
+      @RequestParam(defaultValue = "desc") String sort
+  ) {
+    Sort.Direction direction = "asc".equalsIgnoreCase(sort) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "holidayCount"));
+    Page<CountryHolidayCountResponse> response = holidayService.getCountByCountry(year, pageable);
+
+    return new RsData<>("200", "나라별 공휴일 개수 조회 성공", PageResponse.of(response));
   }
 }

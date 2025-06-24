@@ -12,6 +12,6 @@ public record SyncDataRequest(
 
     @Schema(description = "국가 코드", example = "KR")
     @NotNull
-    String countyCode
+    String countryCode
 ) {
 }

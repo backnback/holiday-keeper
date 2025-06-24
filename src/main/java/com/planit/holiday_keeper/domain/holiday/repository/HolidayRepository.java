@@ -1,5 +1,6 @@
 package com.planit.holiday_keeper.domain.holiday.repository;
 
+import com.planit.holiday_keeper.domain.holiday.entity.Country;
 import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface HolidayRepository extends JpaRepository<Holiday, Long> {
 
@@ -30,12 +32,13 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
   @Query(value = """
         INSERT INTO holidays (
             country_id, date, name, local_name, holiday_year, 
-            launch_year, global, counties, types
+            launch_year, global, counties, types, created_at, modified_at
         )
         VALUES (
             :#{#holiday.country.id}, :#{#holiday.date}, :#{#holiday.name}, 
             :#{#holiday.localName}, :#{#holiday.holidayYear}, :#{#holiday.launchYear},
-            :#{#holiday.global}, :#{#holiday.counties}, :#{#holiday.types}
+            :#{#holiday.global}, :#{#holiday.counties}, :#{#holiday.types},
+            NOW(), NOW()
         )
         ON DUPLICATE KEY UPDATE 
             local_name = VALUES(local_name),
@@ -48,4 +51,14 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
         """, nativeQuery = true)
   void upsert(@Param("holiday") Holiday holiday);
 
+  List<Holiday> findByCountryAndHolidayYear(Country country, int holidayYear);
+
+  int deleteByCountryAndHolidayYear(Country country, int year);
+
+
+  @Query("SELECT c.countryCode, c.name, COUNT(h.id) as holidayCount " +
+      "FROM Holiday h JOIN h.country c " +
+      "WHERE (:year IS NULL OR h.holidayYear = :year) " +
+      "GROUP BY c.id")
+  Page<Object[]> countHolidaysByCountry(@Param("year") int year, Pageable pageable);
 }
