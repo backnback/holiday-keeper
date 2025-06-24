@@ -21,6 +21,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/holidays")
@@ -60,8 +61,9 @@ public class ApiV1HolidayController {
   @PostMapping("/sync")
   @Operation(summary = "특정 연도 및 국가 데이터 동기화 (Refresh)")
   public RsData<Void> syncHolidays(@Valid @RequestBody SyncDataRequest request) {
+    LocalDateTime syncTime = LocalDateTime.now();
     Country country = countryService.findByCountryCode(request.countryCode());
-    fetchHolidayScheduler.fetchByYearAndCountry(country, request.year());
+    fetchHolidayScheduler.fetchByYearAndCountry(country, request.year(), syncTime);
     return new RsData<>("204", "동기화 완료");
   }
 

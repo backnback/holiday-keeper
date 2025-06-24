@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
@@ -68,14 +68,15 @@ public class FetchHolidayScheduler {
       List<Country> countries = countryService.saveApiResponse(countriesData);
       log.info("가능한 국가 수 : {}", countries.size());
 
-      int currentYear = LocalDate.now().getYear();
+      LocalDateTime syncTime = LocalDateTime.now();
+      int currentYear = syncTime.getYear();
       try (ForkJoinPool customPool = new ForkJoinPool(10)) {
         for (int i = 0; i < years; i++) {
           int year = currentYear - i;
           customPool.submit(() ->
               countries.parallelStream().forEach(country -> {
                 try {
-                  fetchByYearAndCountry(country, year);
+                  fetchByYearAndCountry(country, year, syncTime);
                 } catch (Exception e) {
                   log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
                 }
@@ -90,10 +91,10 @@ public class FetchHolidayScheduler {
     }
   }
 
-  public void fetchByYearAndCountry(Country country, int year) {
+  public void fetchByYearAndCountry(Country country, int year, LocalDateTime syncTime) {
     String yearString = String.valueOf(year);
     String holidays = fetchHolidaysData(yearString, country.getCountryCode());
-    holidayService.saveApiResponse(holidays, country);
+    holidayService.saveApiResponse(holidays, country, year, syncTime);
   }
 
   public String fetchCountriesData() {

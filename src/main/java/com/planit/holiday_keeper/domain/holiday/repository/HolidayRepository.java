@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface HolidayRepository extends JpaRepository<Holiday, Long> {
@@ -38,7 +39,7 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
             :#{#holiday.country.id}, :#{#holiday.date}, :#{#holiday.name}, 
             :#{#holiday.localName}, :#{#holiday.holidayYear}, :#{#holiday.launchYear},
             :#{#holiday.global}, :#{#holiday.counties}, :#{#holiday.types},
-            NOW(), NOW()
+            :syncTime, :syncTime
         )
         ON DUPLICATE KEY UPDATE 
             local_name = VALUES(local_name),
@@ -47,18 +48,21 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
             global = VALUES(global),
             counties = VALUES(counties),
             types = VALUES(types),
-            modified_at = NOW()
+            modified_at = :syncTime
         """, nativeQuery = true)
-  void upsert(@Param("holiday") Holiday holiday);
+  void upsert(@Param("holiday") Holiday holiday, @Param("syncTime") LocalDateTime syncTime);
 
   List<Holiday> findByCountryAndHolidayYear(Country country, int holidayYear);
 
   int deleteByCountryAndHolidayYear(Country country, int year);
-
 
   @Query("SELECT c.countryCode, c.name, COUNT(h.id) as holidayCount " +
       "FROM Holiday h JOIN h.country c " +
       "WHERE (:year IS NULL OR h.holidayYear = :year) " +
       "GROUP BY c.id")
   Page<Object[]> countHolidaysByCountry(@Param("year") int year, Pageable pageable);
+
+  @Modifying
+  @Query("DELETE FROM Holiday h WHERE h.country = :country AND h.holidayYear = :year AND h.modifiedAt < :syncTime")
+  int deleteMissingHolidays(@Param("country") Country country, @Param("year") int year, @Param("syncTime") LocalDateTime syncTime);
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,14 +30,20 @@ public class HolidayService {
 
 
   @Transactional
-  public void saveApiResponse(String jsonResponse, Country country) {
+  public void saveApiResponse(
+      String jsonResponse, Country country, int year, LocalDateTime syncTime
+  ) {
     try {
       List<PublicHolidaysApiResponse>
           responses = objectMapper.readValue(jsonResponse, new TypeReference<List<PublicHolidaysApiResponse>>(){});
 
       for (PublicHolidaysApiResponse response : responses) {
-        holidayRepository.upsert(response.toEntity(country));
+        holidayRepository.upsert(response.toEntity(country), syncTime);
       }
+
+      int deletedCount = holidayRepository.deleteMissingHolidays(country, year, syncTime);
+      log.info("공휴일 동기화 완료 - country: {}, year: {}, 저장: {}개, 삭제: {}개, syncTime: {}",
+          country.getCountryCode(), year, responses.size(), deletedCount, syncTime);
 
     } catch (Exception e) {
       log.error("공휴일 데이터 저장 중 에러 발생: {}", e.getMessage(), e);
