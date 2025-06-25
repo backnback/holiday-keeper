@@ -56,7 +56,7 @@ public class Holiday extends BaseEntity {
   @Column(length = 100)
   private String types;
 
-  public List<HolidayTypes> getTypes() {
+  public List<HolidayTypes> getTypesAsList() {
     if (types == null || types.trim().isEmpty()) {
       return List.of();
     }
@@ -75,7 +75,7 @@ public class Holiday extends BaseEntity {
   @Column(length = 500)
   private String counties;
 
-  public List<String> getCounties() {
+  public List<String> getCountiesAsList() {
     if (counties == null || counties.trim().isEmpty()) {
       return List.of();
     }

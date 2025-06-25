@@ -32,3 +32,16 @@ logging:
     org.hibernate.orm.jdbc.bind: INFO
     org.hibernate.orm.jdbc.extract: INFO
     org.springframework.transaction.interceptor: INFO
+
+
+schedule:
+  useSchedule: true
+  useInit: true
+  cron_for_api: "0 0 1 2 1 ?"
+
+
+nager:
+  holidays:
+    url: https://date.nager.at/api/v3/PublicHolidays
+  countries:
+    url: https://date.nager.at/api/v3/AvailableCountries

@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -50,9 +49,9 @@ public record HolidayResponse(
         .name(holiday.getName())
         .countryCode(holiday.getCountry().getCountryCode())
         .global(holiday.isGlobal())
-        .counties(new ArrayList<>(holiday.getCounties()))
+        .counties(holiday.getCountiesAsList())
         .launchYear(holiday.getLaunchYear())
-        .types(holiday.getTypes())
+        .types(holiday.getTypesAsList())
         .build();
   }
 }
