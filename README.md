@@ -69,7 +69,7 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
 | 문서화       | Swagger UI        |
 | CI           | Github Actions CI |
 
-- UI/UX : React, Vite, Vercel(배포)
+- UI/UX : React, Tailwind CSS, Vite, Vercel(배포)
 - Backend 배포 : Docker, Terraform, AWS(프리티어)
 
 
@@ -113,6 +113,11 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
     - JDBC URL : `jdbc:h2:mem:hk_db`
     - Username : `sa`
     - Password : (공백)
+
+<br>
+
+- UI/UX : [https://www.holiday.backnback.site](https://www.holiday.backnback.site/)
+- Backend 배포 : [https://api.backnback.site](https://api.backnback.site/)
 
 <br>
 
@@ -805,6 +810,21 @@ open build/reports/tests/test/index.html
         
         ⇒   **커스텀 스레드풀을 늘리는 방향으로 전환  (속도 향상됨)**
 
+<br>
+<br>
+
+
+### 병렬 처리 한계 (H2 DB와 parallelStream 병렬 방식)
+- 현재 병렬 방식은 마구잡이 형태로 통제 없이 진행된다.
+- 개발 시 알지 못했던 점은 H2 DB가 가진 관대한 방식의 락으로 동시에 upsert() 시 충돌을 일으키지 않고 넘어갔다.
+- 배포 환경에서 제출을 H2 DB로 해야 했기에 배포에서만 MySQL로 전환하면서 늦게 알아차리게 되었다.
+- 계획
+  1. Bulk Upsert 로직을 구현하여 잦은 접근을 줄인다. (완료 - 다만 추후 MySQL로 전환 시 적용 예정)
+  2. parallelStream 방식이 아닌 ExcutorService와 CompletableFuture를 활용한 비동기 방식으로 전환 (완료)
+     - 즉, 작업을 추적할 수 있는 CompletableFuture로 통제 하에 진행하게 한다.
+  3. 재시도 로직 추가
+
+
 
 <br>
 <br>
@@ -815,7 +835,8 @@ open build/reports/tests/test/index.html
 
 1. **Redis 캐싱** : 자주 조회되는 데이터 캐시 처리
 2. **다국어 지원** : 공휴일 이름 다국어 처리
-3. upsert() 로직 **Bulk** 처리
+3. upsert() 로직 **Bulk** 처리 (MySQL 전용으로 구현, 나중에 MySQL로 전환 시 구현 예정)
+4. 무중단 블루/그린 배포 자동화
 
 
 <br>

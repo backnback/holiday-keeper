@@ -14,8 +14,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 @Slf4j
@@ -66,28 +69,33 @@ public class FetchHolidayScheduler {
 
 
   private void fetchAllByYears(int years) {
-    try {
-      long startTime = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
+    try (ExecutorService executor = Executors.newFixedThreadPool(poolSize)) {
+      List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+
       String countriesData = fetchCountriesData();
       List<Country> countries = countryService.saveApiResponse(countriesData);
       log.info("가능한 국가 수 : {}", countries.size());
 
       LocalDateTime syncTime = LocalDateTime.now();
       int currentYear = syncTime.getYear();
-      try (ForkJoinPool customPool = new ForkJoinPool(poolSize)) {
-        for (int i = 0; i < years; i++) {
-          int year = currentYear - i;
-          customPool.submit(() ->
-              countries.parallelStream().forEach(country -> {
-                try {
-                  fetchByYearAndCountry(country, year, syncTime);
-                } catch (Exception e) {
-                  log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
-                }
-              })
-          ).get();
+
+      for (int i = 0; i < years; i++) {
+        int year = currentYear - i;
+        for (Country country : countries) {
+          CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            try {
+              fetchByYearAndCountry(country, year, syncTime);
+            } catch (Exception e) {
+              log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
+            }
+          }, executor);
+          futures.add(future);
         }
       }
+      CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
       long endTime = System.currentTimeMillis();
       log.info("=== {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - startTime);
 
