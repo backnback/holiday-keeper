@@ -847,8 +847,9 @@ open build/reports/tests/test/index.html
 
 **개발자** : River Lee
 
-**개발 기간** : 28 시간
-
 **블로그** : www.blog.backnback.site
+
+**개발 기간** : 28 시간
+![Wakatime](./docs/images/my-time.png)
 
 ---
