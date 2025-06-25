@@ -48,4 +48,4 @@ nager:
 
 
 custom:
-  poolSize: 5
+  poolSize: 1

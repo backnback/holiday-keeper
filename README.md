@@ -3,6 +3,9 @@
 Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서비스
 
 최근 5년(2020-2025)의 전 세계 공휴일 데이터를 저장·조회·관리하는 Mini Service
+- 참고
+    - UI/UX : [https://www.holiday.backnback.site](https://www.holiday.backnback.site/)
+    - Backend 배포 : [https://api.backnback.site](https://api.backnback.site/)
 
 <br>
 
@@ -66,6 +69,9 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
 | 문서화       | Swagger UI        |
 | CI           | Github Actions CI |
 
+- UI/UX : React, Vite, Vercel(배포)
+- Backend 배포 : Docker, Terraform, AWS(프리티어)
+
 
 <br>
 <br>
@@ -95,7 +101,6 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
     ./gradlew clean test
     ```
     ![테스트 실행 성공 스크린샷](./docs/images/screenshot1.png)
-    ![테스트 실행 성공 스크린샷](./docs/images/screenshot2.png)
 
 <br>
 
@@ -581,7 +586,7 @@ open build/reports/tests/test/index.html
 
 <br>
 
-### 3. 성능 지표  (간단 `K6` 테스트)
+### 3. 성능 지표  (간단 로컬 서버 `K6` 테스트)
 
 ```
 데이터 적재: 200+ 국가 × 5년 = 약 5초 (3 ~ 5초)
