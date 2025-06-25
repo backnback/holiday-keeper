@@ -35,6 +35,9 @@ public class FetchHolidayScheduler {
   @Value("${nager.countries.url}")
   private String countryUrl;
 
+  @Value("${custom.poolSize}")
+  private int poolSize;
+
   private final HolidayService holidayService;
   private final CountryService countryService;
   private final WebClient webClient;
@@ -71,7 +74,7 @@ public class FetchHolidayScheduler {
 
       LocalDateTime syncTime = LocalDateTime.now();
       int currentYear = syncTime.getYear();
-      try (ForkJoinPool customPool = new ForkJoinPool(30)) {
+      try (ForkJoinPool customPool = new ForkJoinPool(poolSize)) {
         for (int i = 0; i < years; i++) {
           int year = currentYear - i;
           customPool.submit(() ->

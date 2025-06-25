@@ -11,3 +11,7 @@ nager:
     url: https://date.nager.at/api/v3/PublicHolidays
   countries:
     url: https://date.nager.at/api/v3/AvailableCountries
+
+
+custom:
+  poolSize: 30
