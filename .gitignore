@@ -59,11 +59,7 @@ ehthumbs.db
 Thumbs.db
 
 # 환경 설정 파일 (민감한 정보 포함 시)
-application-local.yml
-application-dev.yml
-application-prod.yml
-# 또는 특정 프로필만
-application-secret.yml
+src/main/resources/application-secret.yml
 
 # 업로드된 파일들 (있다면)
 uploads/
