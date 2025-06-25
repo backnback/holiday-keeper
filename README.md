@@ -537,7 +537,7 @@ ON DUPLICATE KEY UPDATE
 ./gradlew clean test
 
 # 테스트 리포트 확인
-open build/reports/tests/test/index.html
+위치 : build/test-results/test/
 ```
 
 <br>
@@ -815,12 +815,12 @@ open build/reports/tests/test/index.html
 
 
 ### 병렬 처리 한계 (H2 DB와 parallelStream 병렬 방식)
-- 현재 병렬 방식은 마구잡이 형태로 통제 없이 진행된다.
+- 기존 병렬 방식은 마구잡이 형태로 통제 없이 진행했다.
 - 개발 시 알지 못했던 점은 H2 DB가 가진 관대한 방식의 락으로 동시에 upsert() 시 충돌을 일으키지 않고 넘어갔다.
 - 배포 환경에서 제출을 H2 DB로 해야 했기에 배포에서만 MySQL로 전환하면서 늦게 알아차리게 되었다.
 - 계획
   1. Bulk Upsert 로직을 구현하여 잦은 접근을 줄인다. (완료 - 다만 추후 MySQL로 전환 시 적용 예정)
-  2. parallelStream 방식이 아닌 ExcutorService와 CompletableFuture를 활용한 비동기 방식으로 전환 (완료)
+  2. parallelStream 방식이 아닌 ExcutorService와 CompletableFuture를 활용한 비동기 방식으로 전환 (적용 완료)
      - 즉, 작업을 추적할 수 있는 CompletableFuture로 통제 하에 진행하게 한다.
   3. 재시도 로직 추가
 
