@@ -7,6 +7,17 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
 <br>
 
 ## ✔️ 목차
+- [✔️ 프로젝트 개요](#️-프로젝트-개요)
+- [✔️ 주요 기술 스택](#️-주요-기술-스택)
+- [✔️ 빌드 \& 실행 방법](#️-빌드--실행-방법)
+- [✔️ 공통 응답](#️-공통-응답)
+- [✔️ API 명세](#️-api-명세)
+- [✔️ 데이터베이스 설계](#️-데이터베이스-설계)
+- [✔️ 주요 기능](#️-주요-기능)
+- [✔️ 테스트](#️-테스트)
+- [✔️ 성능 최적화](#️-성능-최적화)
+- [✔️ 트러블슈팅](#️-트러블슈팅)
+- [✔️ 향후 개선 고려 사항](#️-향후-개선-고려-사항)
 
 
 
@@ -16,15 +27,15 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
 ## ✔️ 프로젝트 개요
 
 
-| **항목** | **내용** |
-| --- | --- |
-| **프로젝트명** | Holiday Keeper API |
-| **설명** | 공휴일 관리 시스템 API |
-| **API 버전** | v1.0.0 |
-| **OpenAPI 버전** | 3.0.1 |
-| **Base URL** | `https://api.backnback.com/api/v1` |
-| **문서 버전** | 1.0.0 |
-| **최종 수정일** | 2025-06-25 |
+| **항목**         | **내용**                           |
+| ---------------- | ---------------------------------- |
+| **프로젝트명**   | Holiday Keeper API                 |
+| **설명**         | 공휴일 관리 시스템 API             |
+| **API 버전**     | v1.0.0                             |
+| **OpenAPI 버전** | 3.0.1                              |
+| **Base URL**     | `https://api.backnback.com/api/v1` |
+| **문서 버전**    | 1.0.0                              |
+| **최종 수정일**  | 2025-06-25                         |
 
 <br>
 
@@ -45,15 +56,15 @@ Nager.Date 무인증 API를 활용한 전 세계 공휴일 데이터 관리 서�
 ## ✔️ 주요 기술 스택
 
 
-| **Backend** |  |
-| --- | --- |
-| 언어 | Java 21 |
-| 프레임워크 | Spring Boot 3.4.2 |
-| 데이터베이스 | 인메모리 H2 |
-| ORM | JPA(Hibernate) |
-| 테스트 | JUnit 5 |
-| 문서화 | Swagger UI |
-| CI | Github Actions CI |
+| **Backend**  |                   |
+| ------------ | ----------------- |
+| 언어         | Java 21           |
+| 프레임워크   | Spring Boot 3.4.2 |
+| 데이터베이스 | 인메모리 H2       |
+| ORM          | JPA(Hibernate)    |
+| 테스트       | JUnit 5           |
+| 문서화       | Swagger UI        |
+| CI           | Github Actions CI |
 
 
 <br>
@@ -183,17 +194,17 @@ GET /api/v1/holidays
 - **Query Parameters**
     
     
-    | 파라미터 | 타입 | 필수 | 기본값 | 설명 |
-    | --- | --- | --- | --- | --- |
-    | page | int | N | 0 | 페이지 번호 (0부터 시작) |
-    | size | int | N | 10 | 페이지 사이즈 |
-    | year | Integer | N | - | 연도 필터 (2021-2025) |
-    | countryCode  | String | N | - | 국가 코드 (예: KR, US) |
-    | from | LocalDate | N | - | 시작 날짜 (YYYY-MM-DD) |
-    | to | LocalDate | N | - | 종료 날짜 (YYYY-MM-DD) |
-    | type | String | N | - | 공휴일 타입 (PUBLIC, BANK 등) |
-    | name | String | N | - | 공휴일 이름 검색 |
-    | sort | String | N | asc | 정렬 기준 (date) |
+    | 파라미터    | 타입      | 필수 | 기본값 | 설명                          |
+    | ----------- | --------- | ---- | ------ | ----------------------------- |
+    | page        | int       | N    | 0      | 페이지 번호 (0부터 시작)      |
+    | size        | int       | N    | 10     | 페이지 사이즈                 |
+    | year        | Integer   | N    | -      | 연도 필터 (2021-2025)         |
+    | countryCode | String    | N    | -      | 국가 코드 (예: KR, US)        |
+    | from        | LocalDate | N    | -      | 시작 날짜 (YYYY-MM-DD)        |
+    | to          | LocalDate | N    | -      | 종료 날짜 (YYYY-MM-DD)        |
+    | type        | String    | N    | -      | 공휴일 타입 (PUBLIC, BANK 등) |
+    | name        | String    | N    | -      | 공휴일 이름 검색              |
+    | sort        | String    | N    | asc    | 정렬 기준 (date)              |
     
 
 <br>
@@ -284,10 +295,10 @@ DELETE /api/v1/holidays/{countryCode}/{year}
 - **Path Parameters**
     
     
-    | 파라미터 | 타입 | 필수 | 기본값 | 설명 |
-    | --- | --- | --- | --- | --- |
-    | year | Integer | Y | - | 연도 필터 (2021-2025) |
-    | countryCode  | String | Y | - | 국가 코드 (예: KR, US) |
+    | 파라미터    | 타입    | 필수 | 기본값 | 설명                   |
+    | ----------- | ------- | ---- | ------ | ---------------------- |
+    | year        | Integer | Y    | -      | 연도 필터 (2021-2025)  |
+    | countryCode | String  | Y    | -      | 국가 코드 (예: KR, US) |
     - path parameters null 불가
     
 
@@ -316,12 +327,12 @@ GET /api/v1/holidays/countries
 - **Query Parameters**
     
     
-    | 파라미터 | 타입 | 필수 | 기본값 | 설명 |
-    | --- | --- | --- | --- | --- |
-    | page | int | N | 0 | 페이지 번호 (0부터 시작) |
-    | size | int | N | 30 | 페이지 사이즈 |
-    | year | Integer | N | 2025 | 연도 필터 (2021-2025) |
-    | sort | String | N | desc | 정렬 기준 (holidayCount) |
+    | 파라미터 | 타입    | 필수 | 기본값 | 설명                     |
+    | -------- | ------- | ---- | ------ | ------------------------ |
+    | page     | int     | N    | 0      | 페이지 번호 (0부터 시작) |
+    | size     | int     | N    | 30     | 페이지 사이즈            |
+    | year     | Integer | N    | 2025   | 연도 필터 (2021-2025)    |
+    | sort     | String  | N    | desc   | 정렬 기준 (holidayCount) |
     - `holidayCount` : 특정 연도, 특정 국가의 공휴일 수
     
 

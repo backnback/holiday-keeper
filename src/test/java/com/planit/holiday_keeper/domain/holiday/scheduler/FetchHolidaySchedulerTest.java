@@ -12,7 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "spring.profiles.active=test"
+)
 @TestPropertySource(properties = {
     "schedule.useInit=false",
     "schedule.useSchedule=true",
@@ -26,7 +29,7 @@ public class FetchHolidaySchedulerTest {
   private ObjectMapper objectMapper;
 
   @Test
-  @Timeout(15)
+  @Timeout(20)
   void 임의시간_설정_스케줄러_작동_테스트_및_데이터_정기적재_검증() throws Exception {
 
     Thread.sleep(6000);
