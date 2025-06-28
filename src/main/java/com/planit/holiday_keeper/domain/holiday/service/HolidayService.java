@@ -12,13 +12,18 @@ import com.planit.holiday_keeper.global.exceptions.CustomException;
 import com.planit.holiday_keeper.global.exceptions.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -32,32 +37,75 @@ public class HolidayService {
   private final ObjectMapper objectMapper;
 
 
-  @Transactional
-  public void saveApiResponse(
-      String jsonResponse, Country country, int year, LocalDateTime syncTime
+  public List<Holiday> parseHolidays(
+      String jsonResponse, Country country, int year
   ) {
     try {
       List<PublicHolidaysApiResponse>
           responses = objectMapper.readValue(jsonResponse, new TypeReference<List<PublicHolidaysApiResponse>>(){});
-
       if (responses.isEmpty()) {
         log.info("{}년 {} 국가 - 파싱 후 빈 데이터", year, country.getCountryCode());
-        return;
+        return new ArrayList<>();
       }
 
+      List<Holiday> holidays = new ArrayList<>();
       for (PublicHolidaysApiResponse response : responses) {
-        holidayRepository.upsert(response.toEntity(country), syncTime);
+        holidays.add(response.toEntity(country));
       }
 
-      LocalDateTime deleteThreshold = syncTime.minusSeconds(1);  // 안전 장치
-      int deletedCount = holidayRepository.deleteMissingHolidays(country, year, deleteThreshold);
-      log.info("공휴일 동기화 완료 - country: {}, year: {}, 저장: {}개, 삭제: {}개, syncTime: {}",
-          country.getCountryCode(), year, responses.size(), deletedCount, syncTime);
+      return holidays;
 
     } catch (Exception e) {
-      log.error("공휴일 데이터 저장 중 에러 발생: {}", e.getMessage(), e);
-      throw new RuntimeException("공휴일 데이터 저장 실패", e);
+      log.error("국가 {} 데이터 파싱 중 에러 발생: {}", country.getCountryCode(), e.getMessage());
+      return new ArrayList<>();
     }
+  }
+
+
+  @Retryable(
+      retryFor = { CannotAcquireLockException.class },
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 2000, multiplier = 2)
+  )
+  @Transactional
+  public void saveAllAndDeleteOld(
+      List<Holiday> holidays, int years, LocalDateTime syncTime
+  ) {
+    if (holidays.isEmpty()) {
+      log.warn("데이터 동기화 실패 - 저장할 공휴일 데이터가 없습니다.");
+      return;
+    }
+
+    holidays.sort(Comparator.comparing(Holiday::getDate).thenComparing(Holiday::getName));
+    holidayRepository.bulkUpsert(holidays, syncTime);
+
+    log.info("공휴일 데이터 저장 완료 - 가져온 데이터 수: {}, syncTime: {}",
+        holidays.size(), syncTime);
+
+    deleteAllMissingHolidays(years, syncTime);
+  }
+
+
+  @Transactional
+  public void syncHolidays(List<Holiday> holidays, Country country, int year) {
+    if (holidays.isEmpty()) {
+      log.warn("데이터 동기화 실패 - 저장할 공휴일 데이터가 없습니다.");
+      return;
+    }
+
+    holidayRepository.deleteByCountryAndHolidayYear(country, year);
+    holidayRepository.bulkUpsert(holidays, LocalDateTime.now());
+  }
+
+
+  @Transactional
+  public void deleteAllMissingHolidays(int years, LocalDateTime syncTime) {
+    int endYear = syncTime.getYear();
+    int startYear = endYear - years + 1;
+    LocalDateTime deleteThreshold = syncTime.minusSeconds(1);
+    int deletedCount = holidayRepository.deleteMissingHolidays(startYear, endYear, deleteThreshold);
+    log.info("데이터 삭제 정리 완료 - year: {} - {}, 삭제: {}개, syncTime: {}",
+        startYear, endYear, deletedCount, syncTime);
   }
 
 
@@ -157,4 +205,5 @@ public class HolidayService {
       throw new CustomException(ErrorCode.INVALID_YEAR_RANGE);
     }
   }
+
 }
