@@ -94,6 +94,7 @@ public class HolidayService {
     }
 
     holidayRepository.deleteByCountryAndHolidayYear(country, year);
+    holidayRepository.flush();
     holidayRepository.bulkUpsert(holidays, LocalDateTime.now());
   }
 
