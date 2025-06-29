@@ -70,7 +70,7 @@ public class FetchHolidayScheduler {
 
 
   private void fetchAllByYears(int years) {
-    long startTime = System.currentTimeMillis();
+    long totalStart = System.currentTimeMillis();
 
     String countriesData = fetchCountriesData();
     List<Country> countries = countryService.saveApiResponse(countriesData);
@@ -78,6 +78,7 @@ public class FetchHolidayScheduler {
 
     LocalDateTime syncTime = LocalDateTime.now();
     int currentYear = syncTime.getYear();
+    long apiStart = System.currentTimeMillis();  // 성능 측정용
     List<CompletableFuture<List<Holiday>>> futures = new ArrayList<>();
 
     try (ExecutorService executor = Executors.newFixedThreadPool(poolSize)) {
@@ -93,15 +94,28 @@ public class FetchHolidayScheduler {
         }
       }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+      long apiTime = System.currentTimeMillis() - apiStart;  // 성능 측정용
 
+      long collectStart = System.currentTimeMillis();
       List<Holiday> holidays = new ArrayList<>();
       for (CompletableFuture<List<Holiday>> future : futures) {
         holidays.addAll(future.get());
       }
+      long collectTime = System.currentTimeMillis() - collectStart;
+
+
+      long saveStart = System.currentTimeMillis();
       holidayService.saveAllAndDeleteOld(holidays, years, syncTime);
+      long saveTime = System.currentTimeMillis() - saveStart;
 
       long endTime = System.currentTimeMillis();
-      log.info("=== {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - startTime);
+
+
+      log.info("🟢 === 성능 분석 ===");
+      log.info("🟢 API 호출: {}ms", apiTime);
+      log.info("🟢 데이터 수집: {}ms", collectTime);
+      log.info("🟢 DB 저장: {}ms", saveTime);
+      log.info("🟢 === {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - totalStart);
 
     } catch (Exception e) {
       log.error("{}년 데이터 동기화 실패", years, e);

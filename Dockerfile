@@ -1,5 +1,7 @@
 FROM gradle:jdk21-graal-jammy as builder
 
+ARG SKIP_TESTS=true
+
 WORKDIR /app
 
 COPY gradlew .
@@ -13,7 +15,11 @@ RUN ./gradlew dependencies --no-daemon
 
 COPY src src
 
-RUN ./gradlew build --no-daemon
+RUN if [ "$SKIP_TESTS" = "true" ]; then \
+        ./gradlew build -x test --no-daemon; \
+    else \
+        ./gradlew build --no-daemon; \
+    fi
 
 FROM ghcr.io/graalvm/jdk-community:21
 

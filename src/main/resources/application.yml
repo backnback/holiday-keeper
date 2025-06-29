@@ -6,17 +6,12 @@ spring:
     ansi:
       enabled: ALWAYS
   profiles:
-    active: dev
+    active: local
     include: secret
-  datasource:
-    url: jdbc:h2:mem:hk_db;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
   jpa:
     open-in-view: false
     hibernate:
@@ -28,6 +23,17 @@ spring:
         highlight_sql: true
         use_sql_comments: true
 
+
+schedule:
+  useSchedule: true
+  useInit: true
+  cron_for_api: "0 0 1 2 1 ?"
+
+nager:
+  holidays:
+    url: https://date.nager.at/api/v3/PublicHolidays
+  countries:
+    url: https://date.nager.at/api/v3/AvailableCountries
 
 
 logging:

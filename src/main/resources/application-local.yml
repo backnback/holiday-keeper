@@ -13,6 +13,5 @@ spring:
       ddl-auto: create
 
 
-
 custom:
-  poolSize: 100
+  poolSize: 30

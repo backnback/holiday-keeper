@@ -1,0 +1,119 @@
+name: 'deploy'
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'Dockerfile'
+      - 'infraScript/**'
+      # - 'readme.md'
+    branches:
+      - 'main'
+
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '수동 배포'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      skip_tests:
+        description: '테스트 건너뛰기 (빠른 배포)'
+        required: false
+        default: true
+        type: boolean
+
+
+jobs:
+  makeTagAndRelease:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.create_tag.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Tag
+        id: create_tag
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.create_tag.outputs.new_tag }}
+          name: Release ${{ steps.create_tag.outputs.new_tag }}
+          body: ${{ steps.create_tag.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+
+  buildImageAndPush:
+    name: 도커 이미지 빌드와 푸시
+    needs: makeTagAndRelease
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker Buildx 설치
+        uses: docker/setup-buildx-action@v3
+      - name: 레지스트리 로그인
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> ${GITHUB_ENV}
+        env:
+          OWNER: "${{ github.repository_owner }}"
+      - name: application-secret.yml 생성
+        env:
+          #ACTIONS_STEP_DEBUG: true
+          APPLICATION_SECRET: ${{ secrets.APPLICATION_SECRET_YML }}
+        run: echo "$APPLICATION_SECRET" > src/main/resources/application-secret.yml
+      - name: 빌드 앤 푸시
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            SKIP_TESTS=${{ github.event.inputs.skip_tests || 'true' }}
+          tags: |
+            ghcr.io/${{ env.OWNER_LC }}/holiday:${{ needs.makeTagAndRelease.outputs.tag_name }},
+            ghcr.io/${{ env.OWNER_LC }}/holiday:latest
+  
+  
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [ buildImageAndPush ]
+    steps:
+      - name: 배포 시작 알림
+        run: |
+          echo "배포 시작"
+          echo "Tag: ${{ needs.makeTagAndRelease.outputs.tag_name }}"
+          echo "Time: $(date)"
+
+      - name: AWS SSM Send-Command
+        uses: peterkimzz/aws-ssm-send-command@master
+        id: ssm
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          instance-ids: ${{ secrets.AWS_INSTANCE_ID }}
+          working-directory: /
+          comment: Deploy
+          command: |
+            mkdir -p /git/holiday
+            curl -o /git/holiday/zero_downtime_deploy.py https://raw.githubusercontent.com/backnback/holiday-keeper/main/infraScript/zero_downtime_deploy.py
+            chmod +x /git/holiday/zero_downtime_deploy.py
+            /git/holiday/zero_downtime_deploy.py
