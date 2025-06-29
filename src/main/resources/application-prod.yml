@@ -1,6 +1,7 @@
 server:
   port: 8090
   shutdown: graceful
+
 spring:
   autoconfigure:
     exclude:
@@ -48,4 +49,4 @@ nager:
 
 
 custom:
-  poolSize: 1
+  poolSize: 4

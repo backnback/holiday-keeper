@@ -34,6 +34,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	runtimeOnly("com.mysql:mysql-connector-j")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation("org.springframework.boot:spring-boot-starter-aop")
 
 	// Validation
 	implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -46,6 +47,10 @@ dependencies {
 
 	// Swagger UI
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+	// Spring Retry
+	implementation("org.springframework.retry:spring-retry")
+
 }
 
 tasks.withType<Test> {

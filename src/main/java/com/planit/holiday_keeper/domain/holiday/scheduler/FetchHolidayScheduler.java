@@ -1,6 +1,7 @@
 package com.planit.holiday_keeper.domain.holiday.scheduler;
 
 import com.planit.holiday_keeper.domain.holiday.entity.Country;
+import com.planit.holiday_keeper.domain.holiday.entity.Holiday;
 import com.planit.holiday_keeper.domain.holiday.service.CountryService;
 import com.planit.holiday_keeper.domain.holiday.service.HolidayService;
 import jakarta.annotation.PostConstruct;
@@ -69,35 +70,52 @@ public class FetchHolidayScheduler {
 
 
   private void fetchAllByYears(int years) {
-    long startTime = System.currentTimeMillis();
+    long totalStart = System.currentTimeMillis();
+
+    String countriesData = fetchCountriesData();
+    List<Country> countries = countryService.saveApiResponse(countriesData);
+    log.info("동기화 가능한 국가 수 : {}", countries.size());
+
+    LocalDateTime syncTime = LocalDateTime.now();
+    int currentYear = syncTime.getYear();
+    long apiStart = System.currentTimeMillis();  // 성능 측정용
+    List<CompletableFuture<List<Holiday>>> futures = new ArrayList<>();
+
     try (ExecutorService executor = Executors.newFixedThreadPool(poolSize)) {
-      List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-
-      String countriesData = fetchCountriesData();
-      List<Country> countries = countryService.saveApiResponse(countriesData);
-      log.info("가능한 국가 수 : {}", countries.size());
-
-      LocalDateTime syncTime = LocalDateTime.now();
-      int currentYear = syncTime.getYear();
-
       for (int i = 0; i < years; i++) {
         int year = currentYear - i;
         for (Country country : countries) {
-          CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            try {
-              fetchByYearAndCountry(country, year, syncTime);
-            } catch (Exception e) {
-              log.error("국가 {} 데이터 동기화 실패", country.getCountryCode(), e);
-            }
+          CompletableFuture<List<Holiday>> future = CompletableFuture.supplyAsync(() -> {
+            String yearString = String.valueOf(year);
+            String holidaysJson = fetchHolidaysData(yearString, country.getCountryCode());
+            return holidayService.parseHolidays(holidaysJson, country, year);
           }, executor);
           futures.add(future);
         }
       }
       CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+      long apiTime = System.currentTimeMillis() - apiStart;  // 성능 측정용
+
+      long collectStart = System.currentTimeMillis();
+      List<Holiday> holidays = new ArrayList<>();
+      for (CompletableFuture<List<Holiday>> future : futures) {
+        holidays.addAll(future.get());
+      }
+      long collectTime = System.currentTimeMillis() - collectStart;
+
+
+      long saveStart = System.currentTimeMillis();
+      holidayService.saveAllAndDeleteOld(holidays, years, syncTime);
+      long saveTime = System.currentTimeMillis() - saveStart;
 
       long endTime = System.currentTimeMillis();
-      log.info("=== {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - startTime);
+
+
+      log.info("🟢 === 성능 분석 ===");
+      log.info("🟢 API 호출: {}ms", apiTime);
+      log.info("🟢 데이터 수집: {}ms", collectTime);
+      log.info("🟢 DB 저장: {}ms", saveTime);
+      log.info("🟢 === {}년 데이터 동기화 완료 - 총 소요시간: {}ms ===", years, endTime - totalStart);
 
     } catch (Exception e) {
       log.error("{}년 데이터 동기화 실패", years, e);
@@ -106,15 +124,11 @@ public class FetchHolidayScheduler {
   }
 
 
-  public void fetchByYearAndCountry(Country country, int year, LocalDateTime syncTime) {
+  public void fetchByYearAndCountry(Country country, int year) {
     String yearString = String.valueOf(year);
-    String holidays = fetchHolidaysData(yearString, country.getCountryCode());
-
-    if (holidays == null) {
-      log.debug("{}년 {} 국가 - null 응답", year, country.getCountryCode());
-      return;
-    }
-    holidayService.saveApiResponse(holidays, country, year, syncTime);
+    String holidaysJson = fetchHolidaysData(yearString, country.getCountryCode());
+    List<Holiday> holidays = holidayService.parseHolidays(holidaysJson, country, year);
+    holidayService.syncHolidays(holidays, country, year);
   }
 
 
@@ -143,5 +157,4 @@ public class FetchHolidayScheduler {
       throw new RuntimeException("API 호출 실패", e);
     }
   }
-
 }

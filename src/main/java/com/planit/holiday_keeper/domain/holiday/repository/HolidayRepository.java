@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface HolidayRepository extends JpaRepository<Holiday, Long> {
+public interface HolidayRepository extends JpaRepository<Holiday, Long>, CustomQueryRepository {
 
   @Query("SELECT h FROM Holiday h " +
       "WHERE (:year IS NULL OR h.holidayYear = :year) " +
@@ -61,8 +61,8 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
   Page<Object[]> countHolidaysByCountry(@Param("year") int year, Pageable pageable);
 
   @Modifying
-  @Query("DELETE FROM Holiday h WHERE h.country = :country AND h.holidayYear = :year AND h.modifiedAt < :syncTime")
-  int deleteMissingHolidays(@Param("country") Country country, @Param("year") int year, @Param("syncTime") LocalDateTime syncTime);
+  @Query("DELETE FROM Holiday h WHERE h.holidayYear BETWEEN :startYear AND :endYear AND h.modifiedAt < :syncTime")
+  int deleteMissingHolidays(@Param("startYear") int startYear, @Param("endYear") int endYear, @Param("syncTime") LocalDateTime syncTime);
 
   @Query("SELECT h FROM Holiday h WHERE h.country.countryCode = :countryCode AND h.holidayYear = :year")
   List<Holiday> findByCountryCodeAndYear(@Param("countryCode") String countryCode, @Param("year") int year);

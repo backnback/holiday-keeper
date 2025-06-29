@@ -123,7 +123,7 @@ public class ApiV1HolidayControllerTest {
 
   @Test
   void Refresh_API_내부_Upsert_및_삭제_검증() throws Exception {
-    String countryCode = "US";
+    String countryCode = "KR";
     int year = 2025;
 
     // 1. 데이터 변경 전 (원본 조회)
@@ -196,7 +196,6 @@ public class ApiV1HolidayControllerTest {
     JsonNode afterSyncData = afterSyncJson.get("data");
     int restoredCount = afterSyncData.get("totalElements").asInt();
     JsonNode afterSyncContent = afterSyncData.get("content");
-
 
     // 6. 검증
     if (originalCount > 5) {
