@@ -26,6 +26,17 @@ spring:
         highlight_sql: false
         use_sql_comments: false
 
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+
 logging:
   level:
     com.planit.holiday_keeper: INFO
