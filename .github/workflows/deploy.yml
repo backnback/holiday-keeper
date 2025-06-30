@@ -76,6 +76,10 @@ jobs:
           #ACTIONS_STEP_DEBUG: true
           APPLICATION_SECRET: ${{ secrets.APPLICATION_SECRET_YML }}
         run: echo "$APPLICATION_SECRET" > src/main/resources/application-secret.yml
+      - name: credentials.json 생성
+        env:
+          CREDENTIALS: ${{ secrets.CREDENTIALS }}
+        run: echo "$CREDENTIALS" > src/main/resources/credentials.json
       - name: 빌드 앤 푸시
         uses: docker/build-push-action@v5
         with:

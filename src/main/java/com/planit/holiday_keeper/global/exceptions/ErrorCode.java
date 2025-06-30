@@ -20,7 +20,10 @@ public enum ErrorCode {
 
   // Holiday 관련
   INVALID_YEAR_RANGE(HttpStatus.BAD_REQUEST, "연도는 최근 5년 범위 내에서만 가능합니다."),
-  YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "연도는 필수 입력값입니다.");
+  YEAR_REQUIRED(HttpStatus.BAD_REQUEST, "연도는 필수 입력값입니다."),
+
+  // K-Means (Google Sheets)
+  NOT_ENOUGH_DATA(HttpStatus.BAD_REQUEST, "분석할 데이터가 충분하지 않습니다. (헤더 제외 1개 이상 필요)");
 
 
   private final HttpStatus httpStatus;
