@@ -52,6 +52,15 @@ dependencies {
 	// Spring Retry
 	implementation("org.springframework.retry:spring-retry")
 
+
+	// 임시 의존성 (Google Sheets API)
+	implementation("com.google.api-client:google-api-client:2.0.0")
+	implementation("com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0")
+	implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+
+	// 임시 의존성 (K-means 알고리즘)
+	implementation("org.apache.commons:commons-math3:3.6.1")
+
 }
 
 tasks.withType<Test> {

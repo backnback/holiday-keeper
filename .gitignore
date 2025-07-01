@@ -68,3 +68,5 @@ files/
 # 테스트 결과
 /test-results/
 /coverage/
+
+credentials.json

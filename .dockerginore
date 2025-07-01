@@ -13,3 +13,6 @@ build
 
 # Local Gradle properties
 gradle.properties
+
+
+credentials.json
